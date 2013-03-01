@@ -6,15 +6,14 @@ class ORM {
 
     protected $_data = array();
     protected $_timeStamp = '';
-    private $_con;
     protected $_table = '';
     protected $_primaryKey = 'id';
 
-    public function __construct($id, $data = array()) {
-        if (!$data) {
-            $this->_con = Connection::getConnection();
+    public function __construct($id, $data = array()) {    	
+        if (empty($data)) {
+            $con = Connection::getConnection();
             $query = "SELECT * FROM  `" . $this->_table . "` WHERE `" . $this->_primaryKey . "`=$id";
-            $res = $this->_con->query($query);
+            $res = $con->query($query);
             $res->data_seek(0);
             $row = $res->fetch_assoc();
             if ($row) {
@@ -62,7 +61,8 @@ class ORM {
         }
         $dataStr = implode(',', $keyValue);
         $query = "UPDATE  `$databaseName`.`$table` SET $dataStr WHERE `$table`.`$primaryKey` = $id";
-        $stmt = $this->_con->prepare($query);
+        $con = Connection::getConnection();
+        $stmt = $con->prepare($query);
         IF (!($stmt->execute())) {
             return false;
         }
@@ -88,8 +88,8 @@ class ORM {
 
     public static function add($data) {
         $databaseName = Connection::getDatabaseName();
-        $className = get_called_class();        
-        $table =  lcfirst(get_called_class());
+        $className = get_called_class();
+        $table = lcfirst(get_called_class());
         $primaryKey = 'id';
         $keyValue = array($primaryKey => 'NULL');
         foreach (array_keys($data) as $key) {
@@ -106,12 +106,12 @@ class ORM {
             $questions[] = '?';
         }
         $questionStr = implode(',', $questions);
-        $values = implode(',',array_values($keyValue));
+        $values = implode(',', array_values($keyValue));
         $query = "INSERT INTO `$databaseName`.`$table`($fields) VALUES ($values);";
-        $con = Connection::getConnection();   
+        $con = Connection::getConnection();
         $stmt = $con->prepare($query);
-        
-        if(!($stmt->execute())) {
+
+        if (!($stmt->execute())) {
             return false;
         }
         $id = $con->insert_id;
@@ -120,10 +120,73 @@ class ORM {
         $object->touch();
         return $object;
     }
-    public function touch(){
-    	if($this->_timestamp){
-    		$this->save();
-    	}
+
+    public function touch() {
+        if ($this->_timestamp) {
+            $this->save();
+        }
+    }
+
+    public static function search($criteria, $orderBy = null, $limit = null) {
+        $databaseName = Connection::getDatabaseName();
+        $className = get_called_class();
+        $table = lcfirst(get_called_class());
+        $con = Connection::getConnection();
+        $query = "SELECT * FROM `$databaseName`.`$table`";
+        $where = array();
+        foreach ($criteria as $field => $match) {
+            $match = str_replace("'", "", $match);
+            if (!is_numeric($match) && !is_array($match)) {
+                $match = "'$match'";
+            }
+            if (is_numeric($field)) {
+                $where[] = "`id` = $match";
+            } elseif (strpos($field, '?') === false) {
+                if (is_array($match)) {
+                    $orConds = array();
+                    foreach ($match as $value) {
+                        $orConds[] = "`$field` = $value";
+                    }
+                    $where[] = '( ' . implode(' OR ', $orConds) . ' ) ';
+                } else {
+                    $where[] = "`$field` = $match";
+                }
+            } else {
+                $where[] = str_replace('?', $match, $field);
+            }
+        }
+        $whereStr = implode(" AND ", $where);
+        if($where){
+        	$whereStr = " WHERE ".$whereStr;
+        }
+        $orderByStr = '';
+        $limitStr = '';
+        if ($orderBy) {
+            if (is_array($orderBy)) {
+                $orderByStr = 'ORDER BY ' . implode(' , ', $orderBy);
+            } else {
+                $orderByStr = 'ORDER BY ' . $orderBy;
+            }
+        }
+        if ($limit) {
+            $limitStr = "LIMIT $limit";
+        }
+        $query = " $query $whereStr $orderByStr $limitStr";
+        $query = "SELECT * FROM `userDetail` WHERE 1";
+        $result = array();
+        $res = $con->query($query);
+        $res->data_seek(0);
+        while ($row = $res->fetch_assoc()) {
+            if ($row) {
+                $data = array();
+                $fields = array_keys($row);
+                foreach ($fields as $field) {
+                    $data[$field] = $row[$field];
+                }
+                $result[] = new $className(null, $data);
+            }
+        }
+        return $result;
     }
 
 }
