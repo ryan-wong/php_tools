@@ -3,7 +3,7 @@
 class Connection {
 
     public static $_connection = null;
-
+	public static $_databaseName = 'development';
     public static function getConnection() {
         if (!Connection::$_connection) {
             $settings = array('localhost', 'root', '123456', 'development');
@@ -14,6 +14,9 @@ class Connection {
             }
         }
         return Connection::$_connection;
+    }
+    public static function getDatabaseName(){
+    	return Connection::$_databaseName;
     }
 
 }
