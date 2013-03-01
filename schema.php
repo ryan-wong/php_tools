@@ -7,9 +7,8 @@ class DatabaseSchema {
     protected $_tables = array();
     protected $_con = null;
 
-    public function __construct($databaseName) {
+    public function __construct($databaseName, $settings) {
         $this->_databaseName = $databaseName;
-        $settings = array('localhost', 'root', '123456', $databaseName);
         $this->_con = new mysqli($settings[0], $settings[1], $settings[2], $settings[3]);
         if (mysqli_connect_errno()) {
             printf("Connect failed: %s\n", mysqli_connect_error());
@@ -43,15 +42,34 @@ class DatabaseSchema {
                     foreach ($fields as $field) {
                         $tableArray[$field] = $row[$field];
                     }
-                    $this->_tables[$table] = $tableArray;
+                    $this->_tables[$table][] = $tableArray;
                 }
             }
         }
         return $this->_tables;
     }
 
+    public static function compareDatabase(DatabaseSchema $schema2) {
+        $tableDifferences = array_diff_assoc($this->getTableNames(), $schema2->getTableNames());
+        foreach ($tableDifferences as $diff) {
+            if (in_array($diff, $this->getTableNames())) {
+                echo "Table $diff is in Database Schema 1";
+                echo DatabaseSchema::createTable($this->getTables()[$diff]);
+            } else {
+                echo "Table $diff is in Database Schema 2";
+                echo DatabaseSchema::createTable($schema2->getTables()[$diff]);
+            }
+        }
+    }
+
+    public static function createTable($table) {
+        
+    }
+
 }
-//$db = new DatabaseSchema('development');
-//var_dump($db->getTableNames());
-//var_dump($db->getTables());
+
+$settings = array('localhost', 'root', '123456', 'development');
+$db = new DatabaseSchema('development',$settings);
+var_dump($db->getTableNames());
+var_dump($db->getTables());
 ?>
