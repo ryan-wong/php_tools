@@ -6,7 +6,7 @@ class ORM {
 
     protected $_data = array();
     protected $_timeStamp = '';
-    protected $_con;
+    private $_con;
     protected $_table = '';
     protected $_primaryKey = 'id';
 
@@ -63,7 +63,6 @@ class ORM {
         $dataStr = implode(',', $keyValue);
         $query = "UPDATE  `$databaseName`.`$table` SET $dataStr WHERE `$table`.`$primaryKey` = $id";
         $stmt = $this->_con->prepare($query);
-        call_user_func_array(array($stmt, 'bindparams'), array_values($this->_data));
         IF (!($stmt->execute())) {
             return false;
         }
@@ -88,7 +87,36 @@ class ORM {
     }
 
     public static function add($data) {
+        $databaseName = Connection::getDatabaseName();
+        $className = get_called_class();        
+        $table =  lcfirst(get_called_class());
+        $primaryKey = 'id';
+        $keyValue = array($primaryKey => 'NULL');
+        foreach (array_keys($data) as $key) {
+            if (is_numeric($data[$key])) {
+                $value = $data[$key];
+            } else {
+                $value = "'" . $data[$key] . "'";
+            }
+            $keyValue["`$key`"] = $value;
+        }
+        $fields = implode(',', array_keys($keyValue));
+        $questions = array();
+        for ($i = 0; $i < count($keyValue); $i++) {
+            $questions[] = '?';
+        }
+        $questionStr = implode(',', $questions);
+        $values = implode(',',array_values($keyValue));
+        $query = "INSERT INTO `$databaseName`.`$table`($fields) VALUES ($values);";
+        $con = Connection::getConnection();   
+        $stmt = $con->prepare($query);
         
+        if(!($stmt->execute())) {
+            return false;
+        }
+        $id = $con->insert_id;
+        $stmt->close();
+        return new $className($id);
     }
 
 }
