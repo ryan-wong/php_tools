@@ -116,7 +116,14 @@ class ORM {
         }
         $id = $con->insert_id;
         $stmt->close();
-        return new $className($id);
+        $object = new $className($id);
+        $object->touch();
+        return $object;
+    }
+    public function touch(){
+    	if($this->_timestamp){
+    		$this->save();
+    	}
     }
 
 }
