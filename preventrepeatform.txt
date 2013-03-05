@@ -1,0 +1,24 @@
+
+<form method="post" action="pp.php" class="reg_form" onsubmit="submit.disabled = true;submit.value = 'Please wait...';return true;">
+
+<input type="submit" name="Submit" value="Submit" onclick="this.disabled=true; this.value='Please Wait...';" />
+
+<script type="text/javascript">
+    function validateForm(formObj) {
+        
+        if (formObj.username.value=='') {
+            alert('Please enter a username');
+            return false;
+        }
+
+        formObj.submitButton.disabled = true;
+        formObj.submitButton.value = 'Please Wait...';
+        return true;
+
+    }
+</script>
+
+<form name="frmTest" action="" method="post" onsubmit="return validateForm(this);">
+    Username: <input type="text" name="username" value="" /><br />
+    <input type="submit" name="submitButton" value="Submit" />
+</form>
