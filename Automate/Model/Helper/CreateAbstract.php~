@@ -1,0 +1,45 @@
+<?php
+
+abstract class Yesup_Automate_Model_Helper_CreateAbstract {
+
+    protected $_name = '';
+
+    public function __construct($name = '') {
+        $this->_name = $name;
+    }
+
+    public static function getAllTable() {
+        $front = Zend_Controller_Front::getInstance();
+        return $front->getParam("bootstrap")->getPluginResource('multidb')->getDb()->listTables();
+    }
+
+    public function getColumns() {
+        $name = ucfirst($this->_name);
+        $tableClassName = Yesup_Orm_Abstract::_getDbTableClassName($name);
+        $info = $table->info();
+        return $info['cols'];
+    }
+
+    public function __toString() {
+        return $this->_code;
+    }
+
+    public function getTableMeta() {
+        $table = new Yesup_Db_Table_TempTable($this->_name);
+        $info = $table->info();
+        return $info;
+    }
+
+    protected function _helperMapping($enum) {
+        $enumStr = substr($enum, strpos($enum, '(') + 1);
+        $enumStr = substr($enumStr, 0, strlen($enumStr) - 1);
+        $option = "array(\n\t";
+        foreach (explode(',', $enumStr) as $row) {
+            //current form of $row  is 'x' so remove quote
+            $rowNoQuote = str_replace('\'', '', $row);
+            $option .= "'$rowNoQuote' => '" . field2name($rowNoQuote) . "',\n\t";
+        }
+        return substr($option, 0, strlen($option) - 1) . "\t)";
+    }
+
+}

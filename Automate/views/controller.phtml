@@ -1,0 +1,5 @@
+<?php
+$param = Zend_Controller_Front::getInstance()->getRequest()->getParams();
+echo '<a href="/'.$param['module'].'/'.$param['controller'].'/">Go back to Index</a>';
+$this->uiBlockWrapper()->setTitle('Generate  Controller');
+echo $this->form;
