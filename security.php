@@ -69,6 +69,16 @@ class Security {
         }
         return $str;
     }
+    function checkAccessAdminTools() {            
+            //only yesup office ip allow access this page
+            $allowedip = '199.21.151.11';
+            $ip = $_SERVER['REMOTE_ADDR'];
+            if ($ip != $allowedip){
+                $root_dir_level = "../";
+                header("Location: ".$root_dir_level);
+                exit;
+            }
+        }
 
 }
 
