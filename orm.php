@@ -5,7 +5,7 @@ include_once 'connection.php';
 class ORM {
 
     protected $_data = array();
-    protected $_timeStamp = '';
+    protected $_timestamp = '';
     protected $_table = '';
     protected $_primaryKey = 'id';
 
