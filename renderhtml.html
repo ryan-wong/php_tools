@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <script type='text/javascript' src='http://code.jquery.com/jquery-1.6.4.js'></script>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $('#text').dblclick(function(){                    
+                    eval($('#scripttext').val());
+                    $('#result').html('<style>'+$('#csstext').val()+'</style>'+$('#text').val());
+                }); 
+                $('#save').click(function(){
+                    var htmlStr = "<!DOCTYPE HTML>\n<html>\n<head>\n<script type=\"text/javascript\" src=\"http://code.jquery.com/jquery-1.6.4.js\"></script" +">\n";
+                    htmlStr += "<script type=\"text/javascript\"> \n" + $('#scripttext').val() + "\n </script" +">\n";
+                    htmlStr += "<style>\n"+$('#csstext').val()+"\n</style>\n";
+                    htmlStr += "</head>\n<body>\n"+$('#text').val()+"\n</body>";
+                    htmlStr += " \n</html>";
+                    $('#saveText').val(htmlStr);
+                    $('#saveForm').submit();
+                });
+            });
+        </script>
+        <style>
+
+        </style>
+    </head>
+    <body>        
+        <textarea id="csstext" cols="170" rows="5" placeholder="CSS HERE"></textarea>        
+        <textarea id="scripttext" cols="170" rows="10" placeholder="JS HERE"></textarea>        
+        <textarea id="text" cols="170" rows="10" placeholder="HTML HERE. DOUBLE CLICK TO EXECUTE"></textarea>
+        <div style="width:97%">
+            <form action="saveHtml.php" method="POST" id="saveForm">
+                <input type="hidden" name="saveText" id="saveText" />
+            </form>
+            <input type="button" id="save" value="Save" style="float:right"/>
+        </div>
+        <div id="result"></div>
+    </body>
+</html>
